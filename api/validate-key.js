@@ -1,6 +1,6 @@
-const API_KEY = process.env.OPENROUTER_API_KEY;
-
 module.exports = async function handler(req, res) {
+    const API_KEY = process.env.OPENROUTER_API_KEY;
+
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -9,7 +9,8 @@ module.exports = async function handler(req, res) {
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
     if (!API_KEY) {
-        return res.status(500).json({ valid: false, error: 'OPENROUTER_API_KEY is not set in environment variables' });
+        console.error('OPENROUTER_API_KEY is missing');
+        return res.status(500).json({ valid: false, error: 'Server configuration error: API key missing.' });
     }
 
     try {
