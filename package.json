@@ -1,0 +1,14 @@
+{
+  "name": "quizzgenerate",
+  "version": "1.0.0",
+  "description": "AI Test Generator",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}

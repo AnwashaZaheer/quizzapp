@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Generator Chatbot - OpenRouter API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --dark-bg: #1f2937;
+            --light-bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--gradient);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            padding: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .logo h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* API Status Section */
+        .api-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .api-status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-valid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-invalid {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .model-select {
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            min-width: 200px;
+        }
+
+        /* Main Grid Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Upload Section */
+        .upload-card {
+            grid-column: 1 / -1;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--light-bg);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: #eef2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background: #eef2ff;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--light-bg);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .file-details {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-icon {
+            font-size: 1.5rem;
+        }
+
+        .file-name {
+            font-weight: 600;
+        }
+
+        .file-size {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .remove-file {
+            color: var(--danger-color);
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .remove-file:hover {
+            background: #fee2e2;
+        }
+
+        /* Configuration Section */
+        .config-card {
+            grid-column: 1 / -1;
+        }
+
+        .config-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-success {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #0d9488;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: var(--light-bg);
+        }
+
+        /* Chat Container */
+        .chat-card {
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 80%;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--light-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .user-message .message-avatar {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .message-content {
+            padding: 12px 16px;
+            border-radius: 16px;
+            background: var(--light-bg);
+            word-wrap: break-word;
+        }
+
+        .user-message .message-content {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .chat-input-area input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .chat-input-area button {
+            padding: 12px 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 1rem;
+        }
+
+        .chat-input-area button:hover:not(:disabled) {
+            background: var(--primary-dark);
+        }
+
+        /* Test Display */
+        .test-card {
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+
+        .test-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .test-placeholder {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 100px;
+            font-style: italic;
+        }
+
+        /* Question Styles */
+        .question-item {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--light-bg);
+        }
+
+        .question-number {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            list-style: none;
+            margin: 10px 0;
+        }
+
+        .options-list li {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .correct-answer {
+            color: var(--secondary-color);
+            font-weight: 600;
+            margin: 10px 0;
+            padding: 8px;
+            background: #d1fae5;
+            border-radius: 6px;
+        }
+
+        .explanation {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-style: italic;
+            padding: 10px;
+            background: #e0f2fe;
+            border-radius: 6px;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid var(--light-bg);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .spinner-text {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Token Usage */
+        .token-usage {
+            background: var(--light-bg);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .token-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .token-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .token-value {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .api-input-group {
+                flex-direction: column;
+            }
+            
+            .api-input {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .logo h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span style="font-size: 2.5rem;">🤖</span>
+                <h1>Test Generator Chatbot</h1>
+            </div>
+            <p class="subtitle">Powered by OpenRouter API</p>
+        </header>
+
+        <!-- Model Selector -->
+        <div class="api-section">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                        <span>🤖</span> AI Model
+                    </h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Select the AI model to use for generation</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <select id="modelSelect" class="model-select">
+                        <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo (Fast, Good)</option>
+                        <option value="openai/gpt-4">GPT-4 (Best quality, Slower)</option>
+                        <option value="anthropic/claude-2">Claude 2 (Excellent for analysis)</option>
+                        <option value="google/palm-2-chat-bison">Google PaLM 2</option>
+                        <option value="meta-llama/llama-2-70b-chat">Llama 2 70B</option>
+                        <option value="mistralai/mistral-7b-instruct">Mistral 7B (Fast, Free)</option>
+                    </select>
+                    <div id="tokenUsage" class="token-usage" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Upload Card -->
+            <div class="card upload-card">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📤</div>
+                    <h3 class="upload-text">Upload your document</h3>
+                    <p class="file-info">Drag and drop or click to browse</p>
+                    <p class="file-info">Supported formats: PDF, DOCX, TXT, MD (Max 10MB)</p>
+                    <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.md" hidden>
+                    <button class="btn btn-primary" id="uploadBtn">
+                        <span>📂</span> Choose File
+                    </button>
+                </div>
+                <div class="file-list" id="fileList"></div>
+                <div id="fileContent" style="display: none;"></div>
+            </div>
+
+            <!-- Configuration Card -->
+            <div class="card config-card">
+                <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                    <span>⚙️</span> Test Configuration
+                </h3>
+                <div class="config-options">
+                    <div class="form-group">
+                        <label>Number of Questions:</label>
+                        <input type="number" id="numQuestions" min="1" max="20" value="5" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Test Type:</label>
+                        <select id="testType" class="form-control">
+                            <option value="multiple choice">Multiple Choice</option>
+                            <option value="open ended">Open Ended</option>
+                            <option value="mixed">Mixed (Both types)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Difficulty:</label>
+                        <select id="difficulty" class="form-control">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" id="generateTestBtn" disabled>
+                        <span>📝</span> Generate Test
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Card -->
+            <div class="card chat-card">
+                <div class="chat-header">
+                    <span style="font-size: 1.5rem;">💬</span>
+                    <h3>Chat Assistant</h3>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-message">
+                        <div class="message-avatar">🤖</div>
+                        <div>
+                            <div class="message-content">
+                                👋 Hello! Upload a document to get started. I'll help you generate tests and answer questions about it!
+                            </div>
+                            <div class="message-time">Just now</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="userMessage" placeholder="Ask a question about your document..." disabled>
+                    <button id="sendMessageBtn" disabled>
+                        <span>📤</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test Display Card -->
+            <div class="card test-card">
+                <div class="test-header">
+                    <h3 style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.5rem;">📋</span> Generated Test
+                    </h3>
+                    <button class="btn btn-outline" id="exportTestBtn" style="display: none;">
+                        <span>📥</span> Export
+                    </button>
+                </div>
+                <div class="test-content" id="testContent">
+                    <div class="test-placeholder">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">📄</div>
+                        <p>Your generated test will appear here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="spinner-text" id="loadingText">Processing...</div>
+    </div>
+
+    <script>
+        // Auto-detect backend URL.
+        // If opened via Live Server (5500/5501), API calls go to the Node server on :3000
+        // On Vercel or when served by node server.js, use relative path.
+        const API_BASE = (window.location.port === '5500' || window.location.port === '5501')
+            ? 'http://localhost:3000'
+            : '';
+
+        // DOM Elements
+        const modelSelect = document.getElementById('modelSelect');
+        const tokenUsage = document.getElementById('tokenUsage');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileList = document.getElementById('fileList');
+        const fileContent = document.getElementById('fileContent');
+        const generateTestBtn = document.getElementById('generateTestBtn');
+        const chatMessages = document.getElementById('chatMessages');
+        const userMessage = document.getElementById('userMessage');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const testContent = document.getElementById('testContent');
+        const exportTestBtn = document.getElementById('exportTestBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        const numQuestions = document.getElementById('numQuestions');
+        const testType = document.getElementById('testType');
+        const difficulty = document.getElementById('difficulty');
+
+        // State
+        let uploadedFile = null;
+        let fileText = '';
+        let currentTest = null;
+
+        // File Upload Handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const file = e.dataTransfer.files[0];
+            if (file) handleFile(file);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        });
+
+        async function handleFile(file) {
+
+            if (!validateFile(file)) return;
+
+            showLoading('Reading file...');
+
+            try {
+                const text = await readFileContent(file);
+                fileText = text;
+                uploadedFile = {
+                    name: file.name,
+                    size: formatFileSize(file.size),
+                    type: file.type,
+                    preview: text.substring(0, 500) + '...'
+                };
+
+                updateFileList();
+                enableChat();
+                
+                addChatMessage(`📁 File "${file.name}" uploaded successfully! File size: ${formatFileSize(file.size)}`, 'bot');
+                addChatMessage('You can now ask questions about the document or generate a test using the configuration above.', 'bot');
+
+            } catch (error) {
+                alert('Error reading file: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function validateFile(file) {
+            const allowedTypes = ['.txt', '.pdf', '.docx', '.md'];
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            
+            const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!allowedTypes.includes(fileExt)) {
+                alert(`File type not allowed. Please upload: ${allowedTypes.join(', ')}`);
+                return false;
+            }
+            
+            if (file.size > maxSize) {
+                alert('File too large. Maximum size is 10MB');
+                return false;
+            }
+            
+            return true;
+        }
+
+        function readFileContent(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e.target.error);
+                
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                
+                if (fileExt === 'txt' || fileExt === 'md') {
+                    reader.readAsText(file);
+                } else {
+                    // For PDF and DOCX, we'll just show a message that full text extraction would need a backend
+                    resolve(`[${fileExt.toUpperCase()} file uploaded. For full text extraction, a backend server is needed. Preview limited to file metadata.\n\nFile: ${file.name}\nSize: ${formatFileSize(file.size)}\nType: ${file.type || 'unknown'}]`);
+                }
+            });
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function updateFileList() {
+            if (!uploadedFile) {
+                fileList.innerHTML = '';
+                return;
+            }
+
+            fileList.innerHTML = `
+                <div class="file-item">
+                    <div class="file-details">
+                        <span class="file-icon">📄</span>
+                        <div>
+                            <div class="file-name">${uploadedFile.name}</div>
+                            <div class="file-size">${uploadedFile.size}</div>
+                        </div>
+                    </div>
+                    <span class="remove-file" onclick="removeFile()">✖</span>
+                </div>
+            `;
+        }
+
+        window.removeFile = function() {
+            uploadedFile = null;
+            fileText = '';
+            updateFileList();
+            disableChat();
+            generateTestBtn.disabled = true;
+        };
+
+        function enableChat() {
+            userMessage.disabled = false;
+            sendMessageBtn.disabled = false;
+            generateTestBtn.disabled = false;
+        }
+
+        function disableChat() {
+            userMessage.disabled = true;
+            sendMessageBtn.disabled = true;
+            generateTestBtn.disabled = true;
+        }
+
+        // Chat Functions
+        sendMessageBtn.addEventListener('click', sendMessage);
+        userMessage.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const message = userMessage.value.trim();
+            if (!message) return;
+
+            if (!uploadedFile) {
+                alert('Please upload a file first');
+                return;
+            }
+
+            addChatMessage(message, 'user');
+            userMessage.value = '';
+
+            showLoading('Thinking...');
+
+            try {
+                const response = await callOpenRouterAPI(message, 'chat');
+                
+                if (response.success) {
+                    addChatMessage(response.content, 'bot');
+                    
+                    // Update token usage
+                    if (response.usage) {
+                        updateTokenUsage(response.usage);
+                    }
+                } else {
+                    addChatMessage(`❌ Error: ${response.error}`, 'bot');
+                }
+            } catch (error) {
+                addChatMessage(`❌ Error: ${error.message}`, 'bot');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Test Generation
+        generateTestBtn.addEventListener('click', generateTest);
+
+        async function generateTest() {
+
+            if (!uploadedFile) {
+                alert('Please upload a file first');
+                return;
+            }
+
+            const numQ = numQuestions.value;
+            const type = testType.value;
+            const level = difficulty.value;
+
+            showLoading('Generating test with AI...');
+
+            const prompt = `Based on the following document content, generate a ${type} test with ${numQ} questions at ${level} difficulty level.
+
+Document Content:
+${fileText.substring(0, 2000)} ${fileText.length > 2000 ? '...[content truncated]' : ''}
+
+Generate a comprehensive test with clear questions and answers. Format the response with clear numbering for questions.`;
+
+            try {
+                const response = await callOpenRouterAPI(prompt, 'test');
+                
+                if (response.success) {
+                    displayTest(response.content, numQ, type, level);
+                    addChatMessage(`✅ Test generated successfully with ${numQ} ${type} questions at ${level} difficulty!`, 'bot');
+                    exportTestBtn.style.display = 'block';
+                    
+                    if (response.usage) {
+                        updateTokenUsage(response.usage);
+                    }
+                } else {
+                    addChatMessage(`❌ Error generating test: ${response.error}`, 'bot');
+                }
+            } catch (error) {
+                addChatMessage(`❌ Error: ${error.message}`, 'bot');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Calls the backend proxy — API key never touches the browser
+        async function callOpenRouterAPI(prompt, type) {
+            try {
+                const response = await fetch(`${API_BASE}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: modelSelect.value,
+                        messages: [
+                            {
+                                role: 'system',
+                                content: type === 'test'
+                                    ? 'You are a professional test generator. Create educational tests based on provided content.'
+                                    : 'You are a helpful assistant that answers questions about documents.'
+                            },
+                            { role: 'user', content: prompt }
+                        ],
+                        temperature: type === 'test' ? 0.7 : 0.5,
+                        max_tokens: type === 'test' ? 2000 : 500
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'API request failed');
+                }
+
+                return {
+                    success: true,
+                    content: data.choices[0].message.content,
+                    usage: data.usage
+                };
+
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        function addChatMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${sender === 'bot' ? '🤖' : '👤'}</div>
+                <div>
+                    <div class="message-content">${message.replace(/\n/g, '<br>')}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function displayTest(content, numQ, type, level) {
+            const formattedContent = content.replace(/\n/g, '<br>');
+            
+            let html = `
+                <h3 style="margin-bottom: 20px;">Generated Test</h3>
+                <div style="background: var(--light-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p><strong>Questions:</strong> ${numQ} | <strong>Type:</strong> ${type} | <strong>Difficulty:</strong> ${level}</p>
+                </div>
+                <div class="question-item">
+                    ${formattedContent}
+                </div>
+            `;
+            
+            testContent.innerHTML = html;
+            currentTest = content;
+        }
+
+        function updateTokenUsage(usage) {
+            tokenUsage.style.display = 'flex';
+            tokenUsage.innerHTML = `
+                <div class="token-item"><span class="token-label">Model:</span> <span class="token-value">${modelSelect.value}</span></div>
+                <div class="token-item"><span class="token-label">Prompt tokens:</span> <span class="token-value">${usage.prompt_tokens}</span></div>
+                <div class="token-item"><span class="token-label">Completion tokens:</span> <span class="token-value">${usage.completion_tokens}</span></div>
+                <div class="token-item"><span class="token-label">Total tokens:</span> <span class="token-value">${usage.total_tokens}</span></div>
+            `;
+        }
+
+        // Export Functions
+        exportTestBtn.addEventListener('click', () => {
+            if (!currentTest) return;
+            
+            const blob = new Blob([currentTest], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `generated-test-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            addChatMessage('📥 Test exported as text file', 'bot');
+        });
+
+        // Loading Functions
+        function showLoading(text = 'Processing...') {
+            loadingText.textContent = text;
+            loadingOverlay.classList.add('active');
+        }
+
+        function hideLoading() {
+            loadingOverlay.classList.remove('active');
+        }
+
+        // Initialize
+        console.log('Test Generator Chatbot initialized — API key secured on backend');
+    </script>
+</body>
+</html>
